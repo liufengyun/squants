@@ -11,11 +11,11 @@ lazy val defaultSettings =
 
 lazy val squants = crossProject(JSPlatform, JVMPlatform, NativePlatform)
   .crossType(CrossType.Full)
+  .enablePlugins(TutPlugin)
   .in(file("."))
   .settings(defaultSettings: _*)
   .jvmSettings(
     osgiSettings,
-    tutSettings,
     tutTargetDirectory := file("."),
     tutSourceDirectory := file("shared") / "src" / "main" / "tut"
   )
@@ -34,6 +34,12 @@ lazy val root = project.in(file("."))
   )
   .aggregate(squantsJVM, squantsJS, squantsNative)
 
-lazy val squantsJVM = squants.jvm.enablePlugins(SbtOsgi)
+lazy val squantsJVM = squants.jvm.enablePlugins(SbtOsgi).settings(dottySettings)
 lazy val squantsJS = squants.js
 lazy val squantsNative = squants.native
+
+lazy val dottySettings = List(
+  scalaVersion := dottyLatestNightlyBuild.get,
+  libraryDependencies := libraryDependencies.value.map(_.withDottyCompat(scalaVersion.value)),
+  scalacOptions := List("-language:Scala2")
+)
